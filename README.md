@@ -39,6 +39,7 @@ My notes while I'm writing a simple to-do list application in Haskell on Ubuntu.
 * Run `psql` with our new `todoadmin` user
   * `psql --host=localhost --username=todoadmin --dbname=todolist`
 * Create our table
+ 
   ```
   CREATE TABLE tasks (
     id serial PRIMARY KEY,
@@ -62,6 +63,7 @@ My notes while I'm writing a simple to-do list application in Haskell on Ubuntu.
 * Initialize Git
   * `git init`
 * Add in `.gitignore`
+
   ```
   dist
   dist-*
