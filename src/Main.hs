@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
@@ -13,7 +14,10 @@ import Database.PostgreSQL.Simple
   , query
   , query_
   )
+import Database.PostgreSQL.Simple.FromField (FromField)
+import Database.PostgreSQL.Simple.ToField (ToField)
 import Data.Maybe (listToMaybe)
+import Data.String (IsString)
 import Data.Text (Text)
 
 main :: IO ()
@@ -27,14 +31,14 @@ main = do
   
   putStrLn ""
   putStrLn "Adding task"
-  newTaskId <- createTaskDb conn "New task" False
+  newTaskId <- createTaskDb conn "New task" (TaskCompleted False)
   putStrLn $ "New task ID: " ++ (show newTaskId)
   afterAddingTask <- getTasksDb conn
   print afterAddingTask
   
   putStrLn ""
   putStrLn "Updating task"
-  _ <- updateTaskDb conn newTaskId "New task (updated)" True
+  _ <- updateTaskDb conn newTaskId "New task (updated)" (TaskCompleted True)
   afterUpdatingTask <- getTasksDb conn
   print afterUpdatingTask
   
@@ -44,6 +48,9 @@ main = do
   afterDeletingTask <- getTasksDb conn
   print afterDeletingTask
 
+newtype TaskId = TaskId { unTaskId :: Int } deriving (Eq, Show, FromField, ToField)
+newtype TaskLabel = TaskLabel { unTaskLabel :: Text } deriving (Eq, Show, IsString, FromField, ToField)
+newtype TaskCompleted = TaskCompleted { unTaskCompleted :: Bool } deriving (Eq, Show, FromField, ToField)
 
 getConnection :: IO Connection
 getConnection = connect $
@@ -54,21 +61,21 @@ getConnection = connect $
               , connectDatabase="todolist"
               }
 
-createTaskDb :: Connection -> Text -> Bool -> IO Int
+createTaskDb :: Connection -> TaskLabel -> TaskCompleted -> IO TaskId
 createTaskDb conn label completed =
   let q = "INSERT INTO tasks (label, completed) VALUES (?, ?) RETURNING id"
       params = (label, completed)
   in do
     result <- query conn q params
-    return $ fromOnly $ head result
+    return $ fromOnly . head $ result
   -- Sorry! Partial function, and I'm lazy right now
 
-getTasksDb :: Connection -> IO [(Int, Text, Bool)]
+getTasksDb :: Connection -> IO [(TaskId, TaskLabel, TaskCompleted)]
 getTasksDb conn =
   let q = "SELECT id, label, completed FROM tasks;"
   in query_ conn q
 
-getTaskByIdDb :: Connection -> Int -> IO (Maybe (Int, Text, Bool))
+getTaskByIdDb :: Connection -> TaskId -> IO (Maybe (TaskId, TaskLabel, TaskCompleted))
 getTaskByIdDb conn taskId =
   let q = "SELECT id, label, completed FROM tasks WHERE id=?;"
       params = Only taskId
@@ -76,13 +83,13 @@ getTaskByIdDb conn taskId =
     result <- query conn q params
     return $ listToMaybe result
 
-updateTaskDb :: Connection -> Int -> Text -> Bool -> IO ()
+updateTaskDb :: Connection -> TaskId -> TaskLabel -> TaskCompleted -> IO ()
 updateTaskDb conn taskId label completed =
   let q = "UPDATE tasks SET label=?, completed=? WHERE id=?;"
       params = (label, completed, taskId)
   in void $ execute conn q params
 
-deleteTaskDb :: Connection -> Int -> IO ()
+deleteTaskDb :: Connection -> TaskId -> IO ()
 deleteTaskDb conn taskId =
   let q = "DELETE FROM tasks WHERE id=?;"
       params = Only taskId
