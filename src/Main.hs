@@ -4,7 +4,16 @@ module Main where
 
 import Control.Monad (void)
 import Database.PostgreSQL.Simple
-import Data.Maybe
+  ( Connection
+  , ConnectInfo(..)
+  , Only(..)
+  , connect
+  , execute
+  , fromOnly
+  , query
+  , query_
+  )
+import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 
 main :: IO ()
