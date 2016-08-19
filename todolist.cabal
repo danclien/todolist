@@ -19,4 +19,6 @@ executable todolist
   build-depends:       base >= 4.7 && < 5
                      , postgresql-simple
                      , text
+  other-modules:	     IO
+                     , Models
   ghc-options:         -Wall
