@@ -9,7 +9,8 @@ My notes while I'm writing a simple to-do list application in Haskell on Ubuntu.
 * Milestone 1: Create, read, update, and delete tasks using Haskell
 * Milestone 2: Add in `newtype`s
 * Milestone 3: Split models and database functions into separate files
-* Milestone 4: ???
+* Milestone 4: Add models
+* Milestone 5: ???
 
 ## Milestone 1 
 

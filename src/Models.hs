@@ -2,7 +2,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Models 
-  ( TaskCompleted(..)
+  ( Task(..)
+  , TaskCompleted(..)
+  , TaskFields(..)
   , TaskId(..)
   , TaskLabel(..)
   ) where
@@ -15,3 +17,13 @@ import Data.Text (Text)
 newtype TaskId = TaskId { unTaskId :: Int } deriving (Eq, Show, FromField, ToField)
 newtype TaskLabel = TaskLabel { unTaskLabel :: Text } deriving (Eq, Show, IsString, FromField, ToField)
 newtype TaskCompleted = TaskCompleted { unTaskCompleted :: Bool } deriving (Eq, Show, FromField, ToField)
+
+data Task = Task 
+  { taskTaskId :: TaskId
+  , taskTaskFields :: TaskFields
+  } deriving (Eq, Show)
+
+data TaskFields = TaskFields
+  { taskTaskLabel :: TaskLabel
+  , taskTaskCompleted :: TaskCompleted
+  } deriving (Eq, Show)

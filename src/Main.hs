@@ -10,13 +10,15 @@ import Database.PostgreSQL.Simple
   )
 
 import IO 
-  ( deleteTaskDb
-  , createTaskDb
-  , getTasksDb
-  , updateTaskDb
+  ( createTaskIO
+  , deleteTaskByIdIO
+  , getTasksIO
+  , updateTaskIO
   )
 import Models
-  ( TaskCompleted(..)
+  ( Task(..)
+  , TaskCompleted(..)
+  , TaskFields(..)
   )
 
 main :: IO ()
@@ -25,26 +27,28 @@ main = do
 
   putStrLn ""
   putStrLn "Starting"
-  startingTasks <- getTasksDb conn
+  startingTasks <- getTasksIO conn
   print startingTasks
   
   putStrLn ""
   putStrLn "Adding task"
-  newTaskId <- createTaskDb conn "New task" (TaskCompleted False)
+  let newTask = TaskFields "New task" (TaskCompleted False)
+  newTaskId <- createTaskIO conn newTask
   putStrLn $ "New task ID: " ++ (show newTaskId)
-  afterAddingTask <- getTasksDb conn
+  afterAddingTask <- getTasksIO conn
   print afterAddingTask
   
   putStrLn ""
   putStrLn "Updating task"
-  _ <- updateTaskDb conn newTaskId "New task (updated)" (TaskCompleted True)
-  afterUpdatingTask <- getTasksDb conn
+  let updatedTask = Task newTaskId (TaskFields "New task (updated)" (TaskCompleted True))
+  _ <- updateTaskIO conn updatedTask
+  afterUpdatingTask <- getTasksIO conn
   print afterUpdatingTask
   
   putStrLn ""
   putStrLn "Deleting task"
-  _ <- deleteTaskDb conn newTaskId
-  afterDeletingTask <- getTasksDb conn
+  _ <- deleteTaskByIdIO conn newTaskId
+  afterDeletingTask <- getTasksIO conn
   print afterDeletingTask
 
 
